@@ -1,0 +1,4 @@
+export enum SLACK_TYPE {
+  NEW_RECRUIT = 'NEW_RECRUIT',
+  SEND_EMAIL = 'SEND_EMAIL',
+}
