@@ -1,0 +1,121 @@
+service: announcement-notifier
+
+plugins:
+  - serverless-plugin-datadog
+
+provider:
+  stage: ${opt:stage, 'dev'}
+  name: aws
+  runtime: nodejs20.x
+  region: ap-northeast-2
+  environment:
+    DATADOG_API_KEY: ${env:DATADOG_API_KEY}
+    DATADOG_APP_KEY: ${env:DATADOG_APP_KEY}
+    DATADOG_SITE: ${env:DATADOG_SITE}
+    OPENSEARCH_ENDPOINT: ${env:OPENSEARCH_ENDPOINT}
+    OPENSEARCH_USERNAME: ${env:OPENSEARCH_USERNAME}
+    OPENSEARCH_PASSWORD: ${env:OPENSEARCH_PASSWORD}
+    SLACK_EMAIL_WEBHOOK: ${env:SLACK_EMAIL_WEBHOOK}
+    SLACK_NEW_RECRUIT_WEBHOOK: ${env:SLACK_NEW_RECRUIT_WEBHOOK}
+    NODE_ENV: ${opt:stage, 'dev'}
+    USERS_TABLE: ${self:custom.usersTableNames.${opt:stage, 'dev'}}
+    RECRUIT_TABLE: ${self:custom.recruitTableNames.${opt:stage, 'dev'}}
+    AWS_ACCOUNT_ID: ${env:AWS_ACCOUNT_ID}
+    GMAIL_ID: ${env:GMAIL_ID}
+    GMAIL_PW: ${env:GMAIL_PW}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:DescribeStream
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - arn:aws:dynamodb:ap-northeast-2:${env:AWS_ACCOUNT_ID}:table/${self:custom.usersTableNames.${opt:stage, 'dev'}}
+        - arn:aws:dynamodb:ap-northeast-2:${env:AWS_ACCOUNT_ID}:table/${self:custom.recruitTableNames.${opt:stage, 'dev'}}
+
+functions:
+  notifyUsers:
+    handler: dist/lambda.handler
+    timeout: 600
+    memorySize: 1024
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::ImportValue: HywepRecruitStreamArn-${opt:stage, 'dev'}
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - UsersTable
+              - StreamArn
+      - schedule:
+          rate: ${self:custom.schedules.${opt:stage, 'dev'}}
+          enabled: true
+          input:
+            source: "hywep.recruit.tag"
+
+
+custom:
+  recruitTableNames:
+    dev: hywep-recruit-dev
+    qa: hywep-recruit-qa
+    prod: hywep-recruit-prod
+  usersTableNames:
+    dev: hywep-users-dev
+    qa: hywep-users-qa
+    prod: hywep-users-prod
+  schedules:
+    dev: cron(10 16 ? * 1-5 *)
+    qa: cron(30 16 ? * 1-5 *)
+    prod: cron(0 12 ? * 1-5 *)
+  datadog:
+    site: ${env:DATADOG_SITE}
+    enableXrayTracing: false
+    enableDDTracing: true
+    enableDDLogs: true
+    subscribeToAccessLogs: true
+    exclude:
+      - dd-excluded-function
+    addLayers: true
+    monitors:
+      - high_error_rate:
+          name: "High Error Rate with Modified Warning Threshold"
+          message: "More than 10% of the function’s invocations were errors in the selected time range. Notify @data.dog@datadoghq.com @slack-serverless-monitors"
+          tags: [ "modified_error_rate", "serverless", "error_rate" ]
+          require_full_window: true
+          priority: 2
+          options:
+            include_tags: true
+            notify_audit: true
+            thresholds:
+              warning: 0.05
+              critical: 0.1
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.usersTableNames.${opt:stage, 'dev'}}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: N
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+        GlobalSecondaryIndexes:
+          - IndexName: email-index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
