@@ -44,7 +44,9 @@ export async function handleHywepUsers(newItem: any): Promise<void> {
     await sendNewRecruitmentEmail(email, name, matchingRecruits);
     await sendSlackMessage(
       SLACK_TYPE.SEND_EMAIL,
-      `Recruit email sent to ${email}`,
+      `${
+        process.env.NODE_ENV !== 'prod' ? `[${process.env.NODE_ENV}] ` : ''
+      }진행 공고 이메일 전송 완료:\n- 이름: ${name}\n- 이메일: ${email}\n`,
     );
   }
 }
@@ -70,8 +72,11 @@ export async function handleHywepRecruit(newItem: any): Promise<void> {
 
   await sendSlackMessage(
     SLACK_TYPE.NEW_RECRUIT,
-    `New recruit: ${organizationName}`,
+    `${
+      process.env.NODE_ENV !== 'prod' ? `[${process.env.NODE_ENV}] ` : ''
+    }신규 공고:\n- 기관: ${organizationName}\n- 공고상 전공: ${qualifications?.major}\n- 전공: ${majors}\n`,
   );
+
   const matchingUsers = await findMatchingUsers(majors, selectionInfo);
 
   for (const { name, email } of matchingUsers) {
@@ -91,6 +96,12 @@ export async function handleHywepRecruit(newItem: any): Promise<void> {
       internshipDetails,
       announcedMajors,
     );
-    await sendEmail(email, `New recruit: ${organizationName}`, html);
+    await sendEmail(
+      email,
+      `${
+        process.env.NODE_ENV !== 'prod' ? `[${process.env.NODE_ENV}] ` : ''
+      }[한양대학교 현장실습] 새로운 공고를 확인해보세요`,
+      html,
+    );
   }
 }
