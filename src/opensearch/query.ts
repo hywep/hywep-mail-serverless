@@ -50,6 +50,7 @@ export async function searchMatchingRecruits(
         query,
         sort: [{ applicationDeadline: { order: 'asc' } }],
       },
+      size: 1000,
     });
 
     const uniqueResults = new Map<string, any>();
@@ -94,6 +95,7 @@ export async function findMatchingRecruits(
       query,
       sort: [{ applicationDeadline: { order: 'asc' } }],
     },
+    size: 1000,
   });
 
   return response.body.hits.hits.map((hit: any) => hit._source);
@@ -108,7 +110,7 @@ export async function findMatchingUsers(
   }));
 
   const gradeShouldQueries = recruitGrades.map((grade) => ({
-    match: { grade: grade.toString() },
+    match: { grade: grade },
   }));
 
   let mustQueries: any[];
@@ -133,6 +135,7 @@ export async function findMatchingUsers(
     body: {
       query,
     },
+    size: 1000,
   });
 
   return response.body.hits.hits.map((hit: any) => hit._source);
