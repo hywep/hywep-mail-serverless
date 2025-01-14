@@ -44,9 +44,7 @@ export async function handleHywepUsers(newItem: any): Promise<void> {
     await sendNewRecruitmentEmail(email, name, matchingRecruits);
     await sendSlackMessage(
       SLACK_TYPE.SEND_EMAIL,
-      `${
-        process.env.NODE_ENV !== 'prod' ? `[${process.env.NODE_ENV}] ` : ''
-      }진행 공고 이메일 전송 완료:\n- 이름: ${name}\n- 이메일: ${email}\n`,
+      `[${process.env.NODE_ENV}] 진행 공고 이메일 전송 완료:\n- 이름: ${name}\n- 이메일: ${email}\n`,
     );
   }
 }
@@ -68,13 +66,12 @@ export async function handleHywepRecruit(newItem: any): Promise<void> {
     interviewInfo,
     internshipDetails,
     announcedMajors,
+    organizationSupportAmount,
   } = newItem;
 
   await sendSlackMessage(
     SLACK_TYPE.NEW_RECRUIT,
-    `${
-      process.env.NODE_ENV !== 'prod' ? `[${process.env.NODE_ENV}] ` : ''
-    }신규 공고:\n- 기관: ${organizationName}\n- 공고상 전공: ${qualifications?.major}\n- 전공: ${majors}\n`,
+    `[${process.env.NODE_ENV}] 신규 공고:\n- 기관: ${organizationName}\n- 공고상 전공: ${qualifications?.major}\n- 전공: ${majors}\n`,
   );
 
   const matchingUsers = await findMatchingUsers(majors, selectionInfo);
@@ -95,6 +92,7 @@ export async function handleHywepRecruit(newItem: any): Promise<void> {
       interviewInfo,
       internshipDetails,
       announcedMajors,
+      organizationSupportAmount,
     );
     await sendEmail(
       email,
@@ -104,4 +102,8 @@ export async function handleHywepRecruit(newItem: any): Promise<void> {
       html,
     );
   }
+  await sendSlackMessage(
+    SLACK_TYPE.SEND_EMAIL,
+    `[${process.env.NODE_ENV}] 신규 공고 이메일 전송 완료:\n- 기관: ${organizationName}\n- 발송 건수: ${matchingUsers.length}\n`,
+  );
 }

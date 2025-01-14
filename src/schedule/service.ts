@@ -29,7 +29,10 @@ export async function handleScheduledEvent(event: any): Promise<void> {
 
       if (matchingRecruits.length > 0) {
         await sendRecruitmentByTagEmail(email, name, matchingRecruits);
-        await sendSlackMessage(SLACK_TYPE.SEND_EMAIL, `Email sent to ${email}`);
+        await sendSlackMessage(
+          SLACK_TYPE.SEND_EMAIL,
+          `희망 키워드 공고 이메일 전송 완료:\n- 이름수: ${name}\n- 이메일: ${email}\n`,
+        );
       } else {
         console.log(`No matches for user: ${email}`);
       }
