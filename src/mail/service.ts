@@ -80,6 +80,7 @@ export function generateRecruitByTagDetails(recruits: any[]): string {
         interviewInfo,
         internshipDetails,
         announcedMajors,
+        organizationSupportAmount,
       } = recruit;
 
       return generateInternshipDetailEmailHTML(
@@ -96,6 +97,7 @@ export function generateRecruitByTagDetails(recruits: any[]): string {
         interviewInfo,
         internshipDetails,
         announcedMajors,
+        organizationSupportAmount,
       );
     })
     .join('<hr style="border: 1px solid #ddd; margin: 20px 0;">');
@@ -112,47 +114,68 @@ function generateRecruitDetails(recruits: any[]): string {
         department,
         internshipDetails,
         qualifications,
+        organizationSupportAmount,
+        recruitCount,
       } = recruit;
 
       const borderStyle =
         index !== recruits.length - 1 ? 'border-bottom: 1px solid #ddd;' : '';
 
+      // Generate HTML snippets for each field
+      const organizationSizeHtml =
+        organizationSize === '대기업'
+          ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">조직 규모:</strong> <span style="color: red; font-weight: bold;">${organizationSize}</span></li>`
+          : '';
+
+      const organizationNameHtml = organizationName
+        ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">기관 이름:</strong> <span style="color: #000;">${organizationName}</span></li>`
+        : '';
+
+      const departmentHtml = department
+        ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">부서:</strong> <span style="color: #000;">${department}</span></li>`
+        : '';
+
+      const jobTitleHtml = internshipDetails?.jobTitle
+        ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">직무명:</strong> <span style="color: #000;">${internshipDetails.jobTitle}</span></li>`
+        : '';
+
+      const qualificationsHtml = qualifications?.major
+        ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">전공:</strong> <span style="color: #000;">${qualifications.major.join(
+            ', ',
+          )}</span></li>`
+        : '';
+
+      const locationHtml = location
+        ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">위치:</strong> <span style="color: #000;">${location}</span></li>`
+        : '';
+
+      const organizationSupportAmountHtml =
+        organizationSupportAmount?.period &&
+        organizationSupportAmount?.amount &&
+        organizationSupportAmount.amount !== 0
+          ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">급여:</strong> <span style="color: #000;">${organizationSupportAmount.period} ${organizationSupportAmount.amount.toLocaleString()}</span></li>`
+          : '';
+
+      const recruitCountHtml = recruitCount
+        ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">모집 인원:</strong> <span style="color: #000;">${recruitCount}</span></li>`
+        : '';
+
+      const applicationDeadlineHtml = applicationDeadline
+        ? `<li><strong style="color: #0056b3;">지원 마감일:</strong> <span style="color: #000;">${applicationDeadline}</span></li>`
+        : '';
+
       return `
         <div style="margin: 20px 0; padding-bottom: 20px; ${borderStyle}">
           <ul style="list-style: none; padding: 0; margin: 0;">
-            ${
-              organizationSize === '대기업'
-                ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">조직 규모:</strong> <span style="color: red; font-weight: bold;">${organizationSize}</span></li>`
-                : ''
-            }
-            <li style="margin-bottom: 10px;"><strong style="color: #0056b3;">기관 이름:</strong> <span style="color: #000;">${organizationName}</span></li>
-            ${
-              department
-                ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">부서:</strong> <span style="color: #000;">${department}</span></li>`
-                : ''
-            }
-            ${
-              internshipDetails?.jobTitle
-                ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">직무명:</strong> <span style="color: #000;">${internshipDetails.jobTitle}</span></li>`
-                : ''
-            }
-            ${
-              qualifications?.major
-                ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">전공:</strong> <span style="color: #000;">${qualifications.major.join(
-                    ', ',
-                  )}</span></li>`
-                : ''
-            }
-            ${
-              location
-                ? `<li style="margin-bottom: 10px;"><strong style="color: #0056b3;">위치:</strong> <span style="color: #000;">${location}</span></li>`
-                : ''
-            }
-            ${
-              applicationDeadline
-                ? `<li><strong style="color: #0056b3;">지원 마감일:</strong> <span style="color: #000;">${applicationDeadline}</span></li>`
-                : ''
-            }
+            ${organizationSizeHtml}
+            ${organizationNameHtml}
+            ${departmentHtml}
+            ${jobTitleHtml}
+            ${qualificationsHtml}
+            ${locationHtml}
+            ${recruitCountHtml}
+            ${organizationSupportAmountHtml}
+            ${applicationDeadlineHtml}
           </ul>
         </div>
       `;
@@ -208,6 +231,7 @@ export function generateInternshipEmailHTML(
   interviewInfo,
   internshipDetails,
   announcedMajors,
+  organizationSupportAmount,
 ) {
   const organizationSizeHtml =
     organizationSize === '대기업'
@@ -249,6 +273,14 @@ export function generateInternshipEmailHTML(
   const organizationNameHtml = organizationName
     ? `<li style="margin-bottom: 10px"><strong style="color: #0056b3;">기관 이름:</strong> <span style="color: #000;">${organizationName}</span></li>`
     : '';
+
+  const organizationSupportAmountHtml =
+    organizationSupportAmount &&
+    organizationSupportAmount.period &&
+    organizationSupportAmount.amount &&
+    organizationSupportAmount.amount !== 0
+      ? `<li style="margin-bottom: 10px"><strong style="color: #0056b3;">급여:</strong> <span style="color: #000;">${organizationSupportAmount.period} ${organizationSupportAmount.amount.toLocaleString()}</span></li>`
+      : '';
 
   const qualificationsHtml = qualifications
     ? `<ul style="list-style: none; padding: 0; margin: 0;">
@@ -316,6 +348,7 @@ export function generateInternshipEmailHTML(
             ${locationHtml}
             ${typeHtml}
             ${recruitCountHtml}
+            ${organizationSupportAmountHtml}
             ${applicationDeadlineHtml}
             ${startDateHtml}
             ${endDateHtml}
@@ -353,6 +386,7 @@ export function generateInternshipDetailEmailHTML(
   interviewInfo,
   internshipDetails,
   announcedMajors,
+  organizationSupportAmount,
 ) {
   const organizationSizeHtml =
     organizationSize === '대기업'
@@ -394,6 +428,14 @@ export function generateInternshipDetailEmailHTML(
   const organizationNameHtml = organizationName
     ? `<li style="margin-bottom: 10px"><strong style="color: #0056b3;">기관 이름:</strong> <span style="color: #000;">${organizationName}</span></li>`
     : '';
+
+  const organizationSupportAmountHtml =
+    organizationSupportAmount &&
+    organizationSupportAmount.period &&
+    organizationSupportAmount.amount &&
+    organizationSupportAmount.amount !== 0
+      ? `<li style="margin-bottom: 10px"><strong style="color: #0056b3;">급여:</strong> <span style="color: #000;">${organizationSupportAmount.period} ${organizationSupportAmount.amount.toLocaleString()}</span></li>`
+      : '';
 
   const qualificationsHtml = qualifications
     ? `<ul style="list-style: none; padding: 0; margin: 0;">
@@ -451,6 +493,7 @@ export function generateInternshipDetailEmailHTML(
             ${locationHtml}
             ${typeHtml}
             ${recruitCountHtml}
+            ${organizationSupportAmountHtml}
             ${applicationDeadlineHtml}
             ${startDateHtml}
             ${endDateHtml}
