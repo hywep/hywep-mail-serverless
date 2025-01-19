@@ -1,7 +1,10 @@
 import { DynamoDBStreamEvent } from 'aws-lambda';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { AttributeValue } from '@aws-sdk/client-dynamodb';
-import { findMatchingRecruits, findMatchingUsers } from '../opensearch/query';
+import {
+  findMatchingActiveUsers,
+  findMatchingRecruits,
+} from '../opensearch/query';
 import {
   generateInternshipEmailHTML,
   sendEmail,
@@ -74,7 +77,7 @@ export async function handleHywepRecruit(newItem: any): Promise<void> {
     `[${process.env.NODE_ENV}] 신규 공고:\n- 기관: ${organizationName}\n- 공고상 전공: ${qualifications?.major}\n- 전공: ${majors}\n`,
   );
 
-  const matchingUsers = await findMatchingUsers(majors, selectionInfo);
+  const matchingUsers = await findMatchingActiveUsers(majors, selectionInfo);
 
   for (const { name, email } of matchingUsers) {
     const html = generateInternshipEmailHTML(
