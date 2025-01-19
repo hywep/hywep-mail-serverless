@@ -4,7 +4,7 @@ import { unmarshall } from '@aws-sdk/util-dynamodb';
 
 const dynamodb = new DynamoDBClient({ region: 'ap-northeast-2' });
 
-export async function getAllUsers(): Promise<any[]> {
+export async function getAllActiveUsers(): Promise<any[]> {
   const allUsers: any[] = [];
   let lastEvaluatedKey: Record<string, any> | undefined = undefined;
 

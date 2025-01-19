@@ -101,7 +101,7 @@ export async function findMatchingRecruits(
   return response.body.hits.hits.map((hit: any) => hit._source);
 }
 
-export async function findMatchingUsers(
+export async function findMatchingActiveUsers(
   recruitMajors: string[],
   recruitGrades: number[],
 ): Promise<any[]> {
