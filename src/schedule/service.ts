@@ -1,4 +1,4 @@
-import { getAllUsers } from '../dynamo/query';
+import { getAllActiveUsers } from '../dynamo/query';
 import { searchMatchingRecruits } from '../opensearch/query';
 import { sendRecruitmentByTagEmail } from '../mail/service';
 import { sendSlackMessage } from '../slack/service';
@@ -14,7 +14,7 @@ export async function handleScheduledEvent(event: any): Promise<void> {
 
   try {
     console.log('Processing scheduled event:', JSON.stringify(event, null, 2));
-    const users = await getAllUsers();
+    const users = await getAllActiveUsers();
 
     for (const user of users) {
       const { email, name, tags } = user;

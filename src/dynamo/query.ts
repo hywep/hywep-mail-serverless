@@ -4,7 +4,7 @@ import { unmarshall } from '@aws-sdk/util-dynamodb';
 
 const dynamodb = new DynamoDBClient({ region: 'ap-northeast-2' });
 
-export async function getAllUsers(): Promise<any[]> {
+export async function getAllActiveUsers(): Promise<any[]> {
   const allUsers: any[] = [];
   let lastEvaluatedKey: Record<string, any> | undefined = undefined;
 
@@ -13,6 +13,13 @@ export async function getAllUsers(): Promise<any[]> {
       new ScanCommand({
         TableName: DYNAMO_TABLE.USERS,
         ExclusiveStartKey: lastEvaluatedKey,
+        FilterExpression: '#isActive = :trueValue',
+        ExpressionAttributeNames: {
+          '#isActive': 'isActive',
+        },
+        ExpressionAttributeValues: {
+          ':trueValue': { BOOL: true },
+        },
       }),
     );
 
