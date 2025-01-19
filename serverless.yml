@@ -118,4 +118,13 @@ resources:
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
+  Outputs:
+    HywepUserStreamArn:
+      Description: The ARN of the DynamoDB Stream for UsersTable
+      Value:
+        Fn::GetAtt:
+          - UsersTable
+          - StreamArn
+      Export:
+        Name: HywepUserStreamArn-${opt:stage, 'dev'}
 
