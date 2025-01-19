@@ -13,6 +13,13 @@ export async function getAllUsers(): Promise<any[]> {
       new ScanCommand({
         TableName: DYNAMO_TABLE.USERS,
         ExclusiveStartKey: lastEvaluatedKey,
+        FilterExpression: '#isActive = :trueValue',
+        ExpressionAttributeNames: {
+          '#isActive': 'isActive',
+        },
+        ExpressionAttributeValues: {
+          ':trueValue': { BOOL: true },
+        },
       }),
     );
 

@@ -127,6 +127,7 @@ export async function findMatchingUsers(
   const query = {
     bool: {
       must: mustQueries,
+      filter: [{ term: { isActive: true } }],
     },
   };
 
